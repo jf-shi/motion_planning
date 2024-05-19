@@ -1,69 +1,57 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
+#include <queue>
+
 using namespace std;
 
-//利用模板提供通用的交换函数
-template<class T>
-void mySwap(T& a, T& b)
-{
-T temp = a;
-a = b;
-b = temp;
+// 定义四个方向
+int dir[4][2] = { {0, 1}, {1, 0}, {0, -1}, {-1, 0} };
+
+// BFS函数
+void bfs(vector<vector<char>>& grid, vector<vector<bool>>& visited, int x, int y) {
+    queue<pair<int, int>> que; // 定义队列
+    que.push({x, y}); // 起始节点加入队列
+    visited[x][y] = true; // 只要加入队列，立刻标记为访问过的节点
+    while (!que.empty()) { // 开始遍历队列里的元素
+        pair<int, int> cur = que.front(); que.pop(); // 从队列取元素
+        int curx = cur.first;
+        int cury = cur.second; // 当前节点坐标
+        for (int i = 0; i < 4; i++) { // 开始向当前节点的四个方向遍历
+            int nextx = curx + dir[i][0];
+            int nexty = cury + dir[i][1]; // 获取周边四个方向的坐标
+            if (nextx < 0 || nextx >= grid.size() || nexty < 0 || nexty >= grid[0].size()) continue;  // 坐标越界了，直接跳过
+            if (!visited[nextx][nexty] && grid[nextx][nexty] == '1') { // 如果节点没被访问过且是'1'
+                que.push({nextx, nexty});  // 队列添加该节点为下一轮要遍历的节点
+                visited[nextx][nexty] = true; // 只要加入队列立刻标记，避免重复访问
+            }
+        }
+    }
 }
-// 1、自动类型推导，必须推导出一致的数据类型T,才可以使用
-void test01()
-{
-int a = 10;
-int b = 20;
-char c = 'c';
-mySwap(a, b); // 正确，可以推导出一致的T
-//mySwap(a, c); // 错误，推导不出一致的T类型
-}
-// 2、模板必须要确定出T的数据类型，才可以使用
-template<class T>
-void func()
-{
-cout << "func 调用" << endl;
-}
-void test02()
-{
-//func(); //错误，模板不能独立使用，必须确定出T的类型
-func<int>(); //利用显示指定类型的方式，给T一个类型，才可以使用该模板
-}
+
 int main() {
-test01();
-test02();
-system("pause");
-return 0;
+    // 定义grid地图
+    vector<vector<char>> grid = {
+        {'1', '1', '0', '0', '0'},
+        {'1', '1', '0', '0', '0'},
+        {'0', '0', '1', '0', '0'},
+        {'0', '0', '0', '1', '1'}
+    };
+
+    // 初始化visited数组，所有元素初始为false
+    vector<vector<bool>> visited(grid.size(), vector<bool>(grid[0].size(), false));
+
+    // 调用bfs函数从(0, 0)开始
+    bfs(grid, visited, 0, 0);
+
+    // 输出visited数组，查看哪些节点被访问过
+    for (int i = 0; i < visited.size(); ++i) {
+        for (int j = 0; j < visited[i].size(); ++j) {
+            cout << visited[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    return 0;
 }
-#include <string>
-//类模板
-template<class NameType, class AgeType = int>
-class Person
-{
-public:
-Person(NameType name, AgeType age)
-{
-this->mName = name;
-this->mAge = age;
-}
-void showPerson()
-{
-cout << "name: " << this->mName << " age: " << this->mAge << endl;
-}
-public:
-NameType mName;
-AgeType mAge;
-};
-//1、指定传入的类型
-void printPerson1(Person<string, int> &p)
-{
-p.showPerson();
-}
-void test01()
-{
-Person <string, int >p("孙悟空", 100);
-printPerson1(p);
-typeid(p).name(); //输出类型名称
-}
+
+
