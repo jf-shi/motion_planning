@@ -145,7 +145,7 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
 }//
 
 
-
+//注意要判断node1和node2是否存在
 double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
 {
     /* 
@@ -160,7 +160,38 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     *
     *
     */
+   if (!node1 || !node2)
+   {
+        ROS_ERROR("AstarPathFinder::getHeu: node1 or node2 is NULL");
+        return numeric_limits<double>::infinity();
+   }
    
+   double cor_x, cor_y, cor_z;
+   cor_x = node1 -> coord(0) - node2 -> coord(0);
+   cor_y = node1 -> coord(1) - node2 -> coord(1);
+   cor_z = node1 -> coord(2) - node2 -> coord(2);
+
+   switch (_heu)
+   {
+   case Manhattan:
+    /* code */
+    break;
+
+    case Euclidean:
+    /* code */
+    break;
+
+    case Diagonal:
+    /* code */
+    break;
+
+    case Dijkstra:
+
+    break;
+   
+   default:
+    break;
+   }
     
     return 0;
 }
