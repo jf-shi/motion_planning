@@ -60,7 +60,7 @@ void AstarPathFinder::setObs(const double coord_x, const double coord_y, const d
     if( coord_x < gl_xl  || coord_y < gl_yl  || coord_z <  gl_zl || 
         coord_x >= gl_xu || coord_y >= gl_yu || coord_z >= gl_zu )
         return;
-//static_cast<int> 用于将 uint8_t 类型转换为 int 类型以便于输出，因为直接输出 uint8_t 类型的值可能会被解释为字符。
+//static_cast<int> 用于将 uint8_t 类型转换为 int 类型以便于输出，因为直接输出 uint8_t 类型的值可能会被解释为字符。因为 uint8_t 被解释为字符类型。
     int idx_x = static_cast<int>( (coord_x - gl_xl) * inv_resolution);  
     int idx_y = static_cast<int>( (coord_y - gl_yl) * inv_resolution);
     int idx_z = static_cast<int>( (coord_z - gl_zl) * inv_resolution);      
@@ -118,7 +118,7 @@ inline bool AstarPathFinder::isFree(const Eigen::Vector3i & index) const
 {
     return isFree(index(0), index(1), index(2));
 }
-
+//有效的 x 轴索引范围是从 0 到 GLX_SIZE - 1
 inline bool AstarPathFinder::isOccupied(const int & idx_x, const int & idx_y, const int & idx_z) const 
 {
     return  (idx_x >= 0 && idx_x < GLX_SIZE && idx_y >= 0 && idx_y < GLY_SIZE && idx_z >= 0 && idx_z < GLZ_SIZE && 
@@ -144,6 +144,8 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     */
 }//
 
+
+
 double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
 {
     /* 
@@ -158,11 +160,8 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     *
     *
     */
-<<<<<<< HEAD
    
-=======
     
->>>>>>> a6e18d3cdcad88b828d3955bcb2383077f47f920
     return 0;
 }
 

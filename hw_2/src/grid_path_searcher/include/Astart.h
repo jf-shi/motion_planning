@@ -35,7 +35,7 @@ class AstarPathFinder
 		int GLXYZ_SIZE, GLYZ_SIZE;
 		
 		double resolution, inv_resolution; //resolution：地图的分辨率，即每个栅格的边长。inv_resolution：分辨率的倒数，用于坐标转换。
-		double gl_xl, gl_yl, gl_zl;  //表示地图在 X, Y, Z 方向上的下边界坐标。
+		double gl_xl, gl_yl, gl_zl;  //表示/世界坐标系下点云地图在 X, Y, Z 方向上的下边界坐标。
 		double gl_xu, gl_yu, gl_zu;   //表示地图在 X, Y, Z 方向上的上边界坐标。
 
     /*在路径搜索完成后，terminatePtr 会指向目标节点（终止节点）。
