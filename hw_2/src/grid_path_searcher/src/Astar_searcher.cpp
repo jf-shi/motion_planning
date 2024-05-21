@@ -43,7 +43,7 @@ void AstarPathFinder::resetGrid(GridNodePtr ptr)
 {
     ptr->id = 0;
     ptr->cameFrom = NULL;
-    ptr->gScore = inf;
+    ptr->gScore = inf; 
     ptr->fScore = inf;
 }
 
@@ -60,8 +60,8 @@ void AstarPathFinder::setObs(const double coord_x, const double coord_y, const d
     if( coord_x < gl_xl  || coord_y < gl_yl  || coord_z <  gl_zl || 
         coord_x >= gl_xu || coord_y >= gl_yu || coord_z >= gl_zu )
         return;
-
-    int idx_x = static_cast<int>( (coord_x - gl_xl) * inv_resolution);
+//static_cast<int> 用于将 uint8_t 类型转换为 int 类型以便于输出，因为直接输出 uint8_t 类型的值可能会被解释为字符。
+    int idx_x = static_cast<int>( (coord_x - gl_xl) * inv_resolution);  
     int idx_y = static_cast<int>( (coord_y - gl_yl) * inv_resolution);
     int idx_z = static_cast<int>( (coord_z - gl_zl) * inv_resolution);      
 
@@ -106,7 +106,7 @@ Vector3i AstarPathFinder::coord2gridIndex(const Vector3d & pt)
 
 Eigen::Vector3d AstarPathFinder::coordRounding(const Eigen::Vector3d & coord)
 {
-    return gridIndex2coord(coord2gridIndex(coord));
+    return gridIndex2coord(coord2gridIndex(coord));   //这个函数将输入坐标舍入到最近的栅格中心点。它首先将世界坐标转换为栅格索引，然后再将栅格索引转换回世界坐标。
 }
 
 inline bool AstarPathFinder::isOccupied(const Eigen::Vector3i & index) const
@@ -158,7 +158,7 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     *
     *
     */
-
+   
     return 0;
 }
 
