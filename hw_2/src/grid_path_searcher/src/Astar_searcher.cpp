@@ -142,7 +142,7 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     *
     *
     */
-}
+}//
 
 double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
 {
@@ -158,7 +158,11 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     *
     *
     */
+<<<<<<< HEAD
    
+=======
+    
+>>>>>>> a6e18d3cdcad88b828d3955bcb2383077f47f920
     return 0;
 }
 
