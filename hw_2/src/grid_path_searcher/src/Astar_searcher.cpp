@@ -164,7 +164,7 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
                         Euclidean = 2, 
                         Diagonal = 3, 
                         Dijkstra = 4};
-   HeuristicType heu_ = Diagonal;
+   HeuristicType heu_ = Diagonal; //选择启发函数
    double heu_value = 0.0;
     if (!node1 || !node2)
     {
@@ -203,7 +203,7 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     enum Tie_breaker { tie_breaker_1 = 1, 
                       tie_breaker_2 = 2, 
                       tie_breaker_3 = 3};
-    Tie_breaker tie_breaker_ = tie_breaker_1;
+    Tie_breaker tie_breaker_ = tie_breaker_1;//tie_breaker_1为上面的几种启发函数的tie_breaker，tie_breaker_2及_3为未来可能的实现
     double tiebreaker_p = 0.0;
 
     switch (tie_breaker_)
