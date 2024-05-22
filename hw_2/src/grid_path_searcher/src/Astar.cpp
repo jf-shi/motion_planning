@@ -368,15 +368,10 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
             neighborPtrSets[i]->id = 1 : unexpanded, equal to this node is in open set
             *        
             */
-            neighborPtr = neighborPtrSets[i];
-            if (neighborPtr -> id == 0)
-            {   
-                neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
-                openList.push_back(make_pair(neighborPtr->fScore, neighborPtr));
-
-            }
             
-
+           
+            
+            neighborPtr = neighborPtrSets[i];
             if(neighborPtr -> id == 0){ //discover a new node, which is not in the closed set and open set
                 /*
                 *
@@ -385,6 +380,11 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+                neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
+                neighborPtr -> fScore = neighborPtr -> gScore + getHeu(neighborPtr, endPtr);
+                openList.insert(make_pair(neighborPtr->fScore, neighborPtr));
+                neighborPtr -> id = 1; //add to open set
+                neighborPtr -> cameFrom = neighborPtr;
                 continue;
             }
             else if(0){ //this node is in open set and need to judge if it needs to update, the "0" should be deleted when you are coding
