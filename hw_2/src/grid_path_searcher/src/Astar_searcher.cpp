@@ -160,40 +160,78 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     *
     *
     */
-   if (!node1 || !node2)
-   {
-        ROS_ERROR("AstarPathFinder::getHeu: node1 or node2 is NULL");
-        return numeric_limits<double>::infinity();
-   }
+   enum HeuristicType { Manhattan = 1,
+                        Euclidean = 2, 
+                        Diagonal = 3, 
+                        Dijkstra = 4};
+   HeuristicType heu_ = Diagonal;
+   double heu_value = 0.0;
+    if (!node1 || !node2)
+    {
+            ROS_ERROR("AstarPathFinder::getHeu: node1 or node2 is NULL");
+            return numeric_limits<double>::infinity();
+    }
+
+    Eigen::Vector3d coord_node1 = node1 -> coord;
+    Eigen::Vector3d coord_node2 = node2 -> coord;
+    double cor_x = coord_node1(0) - coord_node2(0);
+    double cor_y = coord_node1(1) - coord_node2(1);
+    double cor_z = coord_node1(2) - coord_node2(2);
+    //计算对角线距离的步长
+    double D = 1.0;
+    double D2 = sqrt(2.0);
+    double D3 = sqrt(3.0);
    
-   double cor_x, cor_y, cor_z;
-   cor_x = node1 -> coord(0) - node2 -> coord(0);
-   cor_y = node1 -> coord(1) - node2 -> coord(1);
-   cor_z = node1 -> coord(2) - node2 -> coord(2);
+    switch (heu_)
+    {
+        case Manhattan:
+            heu_value = abs(cor_x) + abs(cor_y) + abs(cor_z);
+            break;
+        case Euclidean:
+            heu_value = sqrt(cor_x * cor_x + cor_y * cor_y + cor_z * cor_z);
+            break;
+        case Diagonal:
 
-   switch (_heu)
-   {
-   case Manhattan:
-    /* code */
-    break;
+            heu_value =  D * (cor_x + cor_y + cor_z) +  (D2 - 2 * D) * min(min(cor_x, cor_y), cor_z) \
+                    + (D3 - 3 * D) * min(max(min(cor_x, cor_y), min(cor_y, cor_z)), cor_x); 
+    default: //默认计算欧式距离
+            heu_value = sqrt(cor_x * cor_x + cor_y * cor_y + cor_z * cor_z);
+        break;
+    }
 
-    case Euclidean:
-    /* code */
-    break;
+    // tie_breaker learned
+    enum Tie_breaker { tie_breaker_1 = 1, 
+                      tie_breaker_2 = 2, 
+                      tie_breaker_3 = 3};
+    Tie_breaker tie_breaker_ = tie_breaker_1;
+    double tiebreaker_p = 0.0;
 
-    case Diagonal:
-    /* code */
-    break;
-
-    case Dijkstra:
-
-    break;
-   
-   default:
-    break;
-   }
-    
-    return 0;
+    switch (tie_breaker_)
+    {
+        case tie_breaker_1:
+            {if (heu_ = Manhattan)
+            {
+                tiebreaker_p = Eigen::Vector3d(GLX_SIZE, GLY_SIZE, GLZ_SIZE).lpNorm<1>();
+            }else if (heu_ = Euclidean){
+                tiebreaker_p = Eigen::Vector3d(GLX_SIZE, GLY_SIZE, GLZ_SIZE).lpNorm<2>();
+            }else if (heu_ = Diagonal){
+                tiebreaker_p = D * (GLX_SIZE + GLY_SIZE + GLZ_SIZE) +  (D2 - 2 * D) * min(min(GLX_SIZE, GLY_SIZE), GLZ_SIZE) \
+                    + (D3 - 3 * D) * min(max(min(GLX_SIZE, GLY_SIZE), min(GLY_SIZE, GLZ_SIZE)), GLX_SIZE); 
+            }
+            tiebreaker_p = D / tiebreaker_p;
+            heu_value *= (1 + tiebreaker_p);
+            break;
+            }
+        case tie_breaker_2: //未来可能的实现
+            break;
+        default: //默认计算Euclidean距离的tie_breaker
+            {tiebreaker_p = Eigen::Vector3d(GLX_SIZE, GLY_SIZE, GLZ_SIZE).lpNorm<2>();
+            tiebreaker_p = D / tiebreaker_p;
+            heu_value *= (1 + tiebreaker_p);
+            break;
+            }
+    }
+    return heu_value;
 }
 
 void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
