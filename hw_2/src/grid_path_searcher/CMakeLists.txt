@@ -45,4 +45,9 @@ add_executable ( random_complex
 
 target_link_libraries( random_complex
     ${catkin_LIBRARIES}
-    ${PCL_LIBRARIES} )  
+    ${PCL_LIBRARIES} ) 
+ADD_COMPILE_OPTIONS(-std=c++11 )
+ADD_COMPILE_OPTIONS(-std=c++14 )
+set( CMAKE_CXX_FLAGS "-std=c++14 -O3" )
+
+ 

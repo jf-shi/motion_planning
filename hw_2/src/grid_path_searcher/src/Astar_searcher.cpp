@@ -383,7 +383,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 */
                 neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
                 neighborPtr -> fScore = neighborPtr -> gScore + getHeu(neighborPtr, endPtr);
-                openList.insert(make_pair(neighborPtr->fScore, neighborPtr));
+                openSet.insert(make_pair(neighborPtr->fScore, neighborPtr));
                 neighborPtr -> id = 1; //add to open set
                 neighborPtr -> cameFrom = neighborPtr;
                 continue;
