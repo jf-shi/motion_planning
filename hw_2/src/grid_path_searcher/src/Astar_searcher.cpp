@@ -333,7 +333,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         *
         *
         */
-        currentPtr = openSet.begin().second;
+        currentPtr = openSet.begin()-> second;
         openSet.erase(openSet.begin());
         currentPtr -> id= -1;
         current_idx = currentPtr -> index;

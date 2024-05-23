@@ -1,0 +1,8 @@
+prefix=/home/owen/vsCode/motion_planning/hw_2/devel
+
+Name: grid_path_searcher
+Description: Description of grid_path_searcher
+Version: 0.0.1
+Cflags: -I/home/owen/vsCode/motion_planning/hw_2/src/grid_path_searcher/include
+Libs: -L${prefix}/lib 
+Requires: 
