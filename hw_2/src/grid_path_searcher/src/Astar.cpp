@@ -319,6 +319,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     vector<double> edgeCostSets;
     GridNodeMap[start_idx(0)][start_idx(1)][start_idx(2)]  = startPtr; //因为不是在地图取出来的，需要将start node加入地图中
     Eigen::Vector3i current_idx; //current的栅格索引
+    double tem_fvalue = 0.0; //用于暂存节点的f值，与当前节点的f值比较，如果小于当前节点的f值，则更新当前节点的f值
     // this is the main loop
     while ( !openSet.empty() ){
         /*、
@@ -395,11 +396,14 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
-                if(){
-                neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
-                neighborPtr -> fScore = neighborPtr -> gScore + getHeu(neighborPtr, endPtr);
-                continue;
+                tem_fvalue  = currentPtr -> gScore + edgeCostSets[i] + getHeu(neighborPtr, endPtr);
+                if(tem_fvalue < neighborPtr -> fScore){
+                    neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
+                    neighborPtr -> fScore = tem_fvalue;
+                    neighborPtr -> cameFrom = currentPtr;
                 }
+                continue;
+                
             }
             else{//this node is in closed set
                 /*
@@ -430,7 +434,13 @@ vector<Vector3d> AstarPathFinder::getPath()
     please write your code below
     *      
     */
-
+    auto currPtr = terminatePtr;
+    while(currPtr != nullptr){
+        gridPath.push_back(currPtr);
+        currPtr = currPtr -> cameFrom;
+    }
+    
+    
     for (auto ptr: gridPath)
         path.push_back(ptr->coord);
         
