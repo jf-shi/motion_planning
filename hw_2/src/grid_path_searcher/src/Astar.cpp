@@ -298,8 +298,8 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     //openSet is the open_list implemented through multimap in STL library
     openSet.clear();
     // currentPtr represents the node with lowest f(n) in the open_list
-    GridNodePtr currentPtr  = NULL;
-    GridNodePtr neighborPtr = NULL;
+    GridNodePtr currentPtr  = nullptr;
+    GridNodePtr neighborPtr = nullptr;
 
     //put start node in open set
     startPtr -> gScore = 0;
@@ -435,7 +435,7 @@ vector<Vector3d> AstarPathFinder::getPath()
     *      
     */
     auto currPtr = terminatePtr;
-    while(currPtr != nullptr){
+    while(currPtr != nullptr) {
         gridPath.push_back(currPtr);
         currPtr = currPtr -> cameFrom;
     }
