@@ -94,6 +94,7 @@ void rcvPointCloudCallBack(const sensor_msgs::PointCloud2 & pointcloud_map)
     }
 
     cloud_vis.width    = cloud_vis.points.size();
+
     cloud_vis.height   = 1;
     cloud_vis.is_dense = true;
 
