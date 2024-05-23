@@ -355,7 +355,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         please write your code below
         *        
         */ 
-
+        //在这个循环里面，id只会为0/1，为-1的都是遍历完之后被erase掉了的节点
         for(int i = 0; i < (int)neighborPtrSets.size(); i++){
             /*
             *
@@ -387,7 +387,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 neighborPtr -> cameFrom = neighborPtr;
                 continue;
             }
-            else if(0){ //this node is in open set and need to judge if it needs to update, the "0" should be deleted when you are coding
+            else if(neighborPtr -> id == 1){ //this node is in open set and need to judge if it needs to update, the "0" should be deleted when you are coding
                 /*
                 *
                 *
@@ -395,7 +395,11 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+                if(){
+                neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
+                neighborPtr -> fScore = neighborPtr -> gScore + getHeu(neighborPtr, endPtr);
                 continue;
+                }
             }
             else{//this node is in closed set
                 /*
@@ -403,6 +407,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+                
                 continue;
             }
         }      
