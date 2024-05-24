@@ -142,6 +142,48 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     *
     *
     */
+    if (currentPtr == nullptr)
+    {
+        ROS_ERROR("AstarPathFinder::AstarGetSucc: currentPtr is NULL");
+        return;
+    }
+    GridNodePtr neighborPtr = nullptr;
+    Eigen::Vector3i current_idx = currentPtr -> index;
+    Eigen::Vector3d current_coord = currentPtr -> coord;
+    Eigen::Vector3i neighbor_idx;
+    Eigen::Vector3d neighbor_coord;
+    double edge_cost = 0.0; //计算边的代价
+    
+    for(int i = -1; i <= 1; i++)
+        for(int j = -1; j <= 1; j++)
+            for(int k = -1; k <= 1; k++){
+                
+                
+                if(i == 0 && j == 0 && k == 0) //跳过当前节点
+                    continue;
+                //跳过越界节点
+                neighbor_idx = current_idx + Eigen::Vector3i(i,j,k);
+                if (neighbor_idx(0) < 0 || neighbor_idx(0) >= GLX_SIZE || neighbor_idx(1) < 0 || neighbor_idx(1) >= GLY_SIZE 
+                    || neighbor_idx(2) < 0 || neighbor_idx(2) >= GLZ_SIZE)
+                    continue;
+                
+                if (isOccupied(neighbor_idx)) //跳过障碍物点
+                    continue;
+
+                
+                neighborPtr = GridNodeMap[neighbor_idx(0)][neighbor_idx(1)][neighbor_idx(2)];
+                if (neighborPtr == nullptr)
+                    continue;
+                
+                if (neighborPtr -> id == -1)
+                    continue;
+                neighbor_coord = neighborPtr -> coord;
+                edge_cost =  (neighbor_coord - current_coord).lpNorm<2>(); //计算边的代价
+                edgeCostSets.push_back(edge_cost);
+                neighborPtrSets.push_back(neighborPtr);
+
+            }
+
 }//
 
 
@@ -160,41 +202,79 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     *
     *
     */
-   if (!node1 || !node2)
-   {
-        ROS_ERROR("AstarPathFinder::getHeu: node1 or node2 is NULL");
-        return numeric_limits<double>::infinity();
-   }
+   enum class HeuristicType { Manhattan = 1,
+                        Euclidean = 2, 
+                        Diagonal = 3, 
+                        Dijkstra = 4};
+   HeuristicType heu_ = HeuristicType::Euclidean; //选择启发函数
+   double heu_value = 0.0;
+    if (!node1 || !node2)
+    {
+            ROS_ERROR("AstarPathFinder::getHeu: node1 or node2 is NULL");
+            return numeric_limits<double>::infinity();
+    }
+
+    Eigen::Vector3d coord_node1 = node1 -> coord;
+    Eigen::Vector3d coord_node2 = node2 -> coord;
+    double cor_x = coord_node1(0) - coord_node2(0);
+    double cor_y = coord_node1(1) - coord_node2(1);
+    double cor_z = coord_node1(2) - coord_node2(2);
+    //计算对角线距离的步长
+    double D = 1.0;
+    double D2 = sqrt(2.0);
+    double D3 = sqrt(3.0);
    
-   double cor_x, cor_y, cor_z;
-   cor_x = node1 -> coord(0) - node2 -> coord(0);
-   cor_y = node1 -> coord(1) - node2 -> coord(1);
-   cor_z = node1 -> coord(2) - node2 -> coord(2);
+    switch (heu_)
+    {
+        case HeuristicType::Manhattan:
+            heu_value = abs(cor_x) + abs(cor_y) + abs(cor_z);
+            break;
+        case HeuristicType::Euclidean:
+            heu_value = sqrt(cor_x * cor_x + cor_y * cor_y + cor_z * cor_z);
+            break;
+        case HeuristicType::Diagonal:
 
-   switch (_heu)
-   {
-   case Manhattan:
-    /* code */
-    break;
+            heu_value =  D * (cor_x + cor_y + cor_z) +  (D2 - 2 * D) * min(min(cor_x, cor_y), cor_z) \
+                    + (D3 - 3 * D) * min(max(min(cor_x, cor_y), min(cor_y, cor_z)), cor_x); 
+    default: //默认计算欧式距离
+            heu_value = sqrt(cor_x * cor_x + cor_y * cor_y + cor_z * cor_z);
+        break;
+    }
 
-    case Euclidean:
-    /* code */
-    break;
+    // tie_breaker learned
+    enum class Tie_breaker { tie_breaker_1 = 1, 
+                      tie_breaker_2 = 2, 
+                      tie_breaker_3 = 3};
+    Tie_breaker tie_breaker_ = Tie_breaker::tie_breaker_1;//tie_breaker_1为上面的几种启发函数的tie_breaker，tie_breaker_2及_3为未来可能的实现
+    double tiebreaker_p = 0.0;
 
-    case Diagonal:
-    /* code */
-    break;
-
-    case Dijkstra:
-
-    break;
-   
-   default:
-    break;
-   }
-    
-    return 0;
+    switch (tie_breaker_)
+    {
+        case Tie_breaker::tie_breaker_1:
+            {if (heu_ == HeuristicType::Manhattan)
+            {
+                tiebreaker_p = Eigen::Vector3d(GLX_SIZE, GLY_SIZE, GLZ_SIZE).lpNorm<1>();
+            }else if (heu_ == HeuristicType::Euclidean){
+                tiebreaker_p = Eigen::Vector3d(GLX_SIZE, GLY_SIZE, GLZ_SIZE).lpNorm<2>();
+            }else if (heu_ == HeuristicType::Diagonal){
+                tiebreaker_p = D * (GLX_SIZE + GLY_SIZE + GLZ_SIZE) +  (D2 - 2 * D) * min(min(GLX_SIZE, GLY_SIZE), GLZ_SIZE) \
+                    + (D3 - 3 * D) * min(max(min(GLX_SIZE, GLY_SIZE), min(GLY_SIZE, GLZ_SIZE)), GLX_SIZE); 
+            }
+            tiebreaker_p = D / tiebreaker_p;
+            heu_value *= (1 + tiebreaker_p);
+            break;
+            }
+        case Tie_breaker::tie_breaker_2: //未来可能的实现
+            break;
+        default: //默认计算Euclidean距离的tie_breaker
+           
+            break;
+            
+    }
+    return heu_value;
 }
+
+
 
 void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
 {   
@@ -216,8 +296,8 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     //openSet is the open_list implemented through multimap in STL library
     openSet.clear();
     // currentPtr represents the node with lowest f(n) in the open_list
-    GridNodePtr currentPtr  = NULL;
-    GridNodePtr neighborPtr = NULL;
+    GridNodePtr currentPtr  = nullptr;
+    GridNodePtr neighborPtr = nullptr;
 
     //put start node in open set
     startPtr -> gScore = 0;
@@ -235,7 +315,9 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     */
     vector<GridNodePtr> neighborPtrSets;
     vector<double> edgeCostSets;
-
+    GridNodeMap[start_idx(0)][start_idx(1)][start_idx(2)]  = startPtr; //因为不是在地图取出来的，需要将start node加入地图中
+    Eigen::Vector3i current_idx; //current的栅格索引
+    double tem_fvalue = 0.0; //用于暂存节点的f值，与当前节点的f值比较，如果小于当前节点的f值，则更新当前节点的f值
     // this is the main loop
     while ( !openSet.empty() ){
         /*、
@@ -249,6 +331,11 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         *
         *
         */
+        currentPtr = openSet.begin()-> second;
+        openSet.erase(openSet.begin());
+        currentPtr -> id= -1;
+        current_idx = currentPtr -> index;
+        GridNodeMap[current_idx(0)][current_idx(1)][current_idx(2)] -> id = -1; //将当前节点加入closed set,表示已经被访问过了
 
         // if the current node is the goal 
         if( currentPtr->index == goalIdx ){
@@ -257,7 +344,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
             ROS_WARN("[A*]{sucess}  Time in A*  is %f ms, path cost if %f m", (time_2 - time_1).toSec() * 1000.0, currentPtr->gScore * resolution );            
             return;
         }
-        //get the succetion
+        //get the succetion获得当前节点的邻居节点
         AstarGetSucc(currentPtr, neighborPtrSets, edgeCostSets);  //STEP 4: finish AstarPathFinder::AstarGetSucc yourself     
 
         /*
@@ -266,7 +353,8 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         STEP 5:  For all unexpanded neigbors "m" of node "n", please finish this for loop
         please write your code below
         *        
-        */         
+        */ 
+        //在这个循环里面，id只会为0/1，为-1的都是遍历完之后被erase掉了的节点
         for(int i = 0; i < (int)neighborPtrSets.size(); i++){
             /*
             *
@@ -279,6 +367,10 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
             neighborPtrSets[i]->id = 1 : unexpanded, equal to this node is in open set
             *        
             */
+            
+           
+            
+            neighborPtr = neighborPtrSets[i];
             if(neighborPtr -> id == 0){ //discover a new node, which is not in the closed set and open set
                 /*
                 *
@@ -287,9 +379,14 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+                neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
+                neighborPtr -> fScore = neighborPtr -> gScore + getHeu(neighborPtr, endPtr);
+                openSet.insert(make_pair(neighborPtr->fScore, neighborPtr));
+                neighborPtr -> id = 1; //add to open set
+                neighborPtr -> cameFrom = neighborPtr;
                 continue;
             }
-            else if(0){ //this node is in open set and need to judge if it needs to update, the "0" should be deleted when you are coding
+            else if(neighborPtr -> id == 1){ //this node is in open set and need to judge if it needs to update, the "0" should be deleted when you are coding
                 /*
                 *
                 *
@@ -297,7 +394,14 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+                tem_fvalue  = currentPtr -> gScore + edgeCostSets[i] + getHeu(neighborPtr, endPtr);
+                if(tem_fvalue < neighborPtr -> fScore){
+                    neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
+                    neighborPtr -> fScore = tem_fvalue;
+                    neighborPtr -> cameFrom = currentPtr;
+                }
                 continue;
+                
             }
             else{//this node is in closed set
                 /*
@@ -305,6 +409,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+                
                 continue;
             }
         }      
@@ -327,7 +432,13 @@ vector<Vector3d> AstarPathFinder::getPath()
     please write your code below
     *      
     */
-
+    auto currPtr = terminatePtr;
+    while(currPtr != nullptr) {
+        gridPath.push_back(currPtr);
+        currPtr = currPtr -> cameFrom;
+    }
+    
+    
     for (auto ptr: gridPath)
         path.push_back(ptr->coord);
         

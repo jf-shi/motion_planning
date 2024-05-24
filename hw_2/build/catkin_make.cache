@@ -1,0 +1,2 @@
+grid_path_searcher:rviz_plugins:waypoint_generator
+-DCATKIN_DEVEL_PREFIX=/home/owen/vsCode/motion_planning/hw_2/devel -DCMAKE_INSTALL_PREFIX=/home/owen/vsCode/motion_planning/hw_2/install -G Unix Makefiles
